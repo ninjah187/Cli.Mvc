@@ -13,6 +13,8 @@ namespace Cli.Mvc.Parsing
         readonly IEnumerable<Token> _tokens;
 
         string _optionKey = null;
+
+        public static ParsedParams Parse(string command) => new Parser(command).Parse();
         
         public Parser(string command)
         {
