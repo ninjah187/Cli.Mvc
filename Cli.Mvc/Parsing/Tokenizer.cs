@@ -43,6 +43,12 @@ namespace Cli.Mvc.Parsing
 
                 if (current.StartsWith("\""))
                 {
+                    if (current.EndsWith("\""))
+                    {
+                        yield return new Token(TokenType.Word, TrimQuotemarks(current));
+                        continue;
+                    }
+
                     while (input.Any())
                     {
                         var next = input.Pop();
@@ -51,9 +57,7 @@ namespace Cli.Mvc.Parsing
 
                         if (next.EndsWith("\""))
                         {
-                            current = current.Substring(1, current.Length - 1);
-                            current = current.Substring(0, current.Length - 1);
-                            yield return new Token(TokenType.Word, current);
+                            yield return new Token(TokenType.Word, TrimQuotemarks(current));
                             break;
                         }
                     }
@@ -63,6 +67,13 @@ namespace Cli.Mvc.Parsing
 
                 yield return new Token(TokenType.Word, current);
             }
+        }
+
+        static string TrimQuotemarks(string value)
+        {
+            value = value.Substring(1, value.Length - 1);
+            value = value.Substring(0, value.Length - 1);
+            return value;
         }
     }
 }

@@ -127,5 +127,43 @@ namespace Cli.Mvc.Tests.Parsing
 
             Assert.Equal(expected, tokens);
         }
+
+        [Fact]
+        public void TokenizesManyWordsWithSingleWordInQuotemarks()
+        {
+            var tokenizer = new Tokenizer();
+
+            var tokens = tokenizer.Tokenize("ninja add \"Bob\"").ToList();
+
+            var expected = new List<Token>
+            {
+                new(TokenType.Word, "ninja"),
+                new(TokenType.Word, "add"),
+                new(TokenType.Word, "Bob"),
+            };
+
+            Assert.Equal(expected, tokens);
+        }
+
+        [Fact]
+        public void TokenizesManyWordsWithSingleWordInQuotemarksWithOptions()
+        {
+            var tokenizer = new Tokenizer();
+
+            var tokens = tokenizer.Tokenize("ninja add \"Bob\" --weapon \"The Sharpest Katana\" --hp \"100\"").ToList();
+
+            var expected = new List<Token>
+            {
+                new(TokenType.Word, "ninja"),
+                new(TokenType.Word, "add"),
+                new(TokenType.Word, "Bob"),
+                new(TokenType.Option, "weapon"),
+                new(TokenType.Word, "The Sharpest Katana"),
+                new(TokenType.Option, "hp"),
+                new(TokenType.Word, "100")
+            };
+
+            Assert.Equal(expected, tokens);
+        }
     }
 }
