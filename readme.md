@@ -9,8 +9,7 @@ It leverages the familiar concept of controllers to handle command inputs, makin
 - **MVC Architecture**: Use controllers to handle commands, promoting clean separation of concerns.
 - **Command Routing**: Automatically maps commands to corresponding controller actions.
 - **Parameter Binding**: Supports binding command arguments and options to method parameters.
-- **Dependency Injection**: Integrates with popular DI frameworks for easy service management.
-- **Middleware Support**: Extend and customize command handling with middleware.
+- **Dependency Injection**: Uses DI for easy service management.
 
 ## Getting started
 
