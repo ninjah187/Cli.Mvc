@@ -68,7 +68,7 @@ namespace Cli.Mvc.Runtime
             // TODO: Implement TryGetValue to avoid double lookup.
             if (Arguments.Exists(name))
             {
-                return this.Arguments.Get(name, type);
+                return Arguments.Get(name, type);
             }
 
             // TODO: check for option attribute
