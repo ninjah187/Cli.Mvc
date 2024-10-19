@@ -6,17 +6,17 @@ using System.Threading.Tasks;
 
 namespace Cli.Mvc.Tests.Apps.SimpleApp
 {
-    public class AppWithOptionalStringIntArguments
+    public class AppWithOptionalStringArgumentsTests
     {
         class TestController : Controller
         {
-            public IActionResult Hello(string name, int? age)
+            public IActionResult Hello(string name, string? city)
             {
-                if (age != null)
+                if (city != null)
                 {
-                    return Ok($"Hello {name}, you are {age} years old!");
+                    return Ok($"Hello {name} from city of {city}!");
                 }
-                return Ok($"Hello {name}, I don't know your age!");
+                return Ok($"Hello {name} from somewhere!");
             }
         }
 
@@ -29,10 +29,10 @@ namespace Cli.Mvc.Tests.Apps.SimpleApp
 
             var output = await ConsoleOut.Collect(() =>
             {
-                app.Run("test hello Bob 18");
+                app.Run("test hello Bob London");
             });
 
-            var expectedOutput = new[] { "Hello Bob, you are 18 years old!" };
+            var expectedOutput = new[] { "Hello Bob from city of London!" };
 
             Assert.Equal(expectedOutput, output);
         }
@@ -49,7 +49,7 @@ namespace Cli.Mvc.Tests.Apps.SimpleApp
                 app.Run("test hello Bob");
             });
 
-            var expectedOutput = new[] { "Hello Bob, I don't know your age!" };
+            var expectedOutput = new[] { "Hello Bob from somewhere!" };
 
             Assert.Equal(expectedOutput, output);
         }

@@ -3,20 +3,21 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Cli.Mvc;
 
 namespace Cli.Mvc.Tests.Apps.SimpleApp
 {
-    public class AppWithOptionalStringArguments
+    public class AppWithOptionTests
     {
         class TestController : Controller
         {
-            public IActionResult Hello(string name, string? city)
+            public IActionResult Hello([Option("--polite", "To be polite or not.")] bool polite = true)
             {
-                if (city != null)
+                if (polite)
                 {
-                    return Ok($"Hello {name} from city of {city}!");
+                    return Ok($"Welcome dear World");
                 }
-                return Ok($"Hello {name} from somewhere!");
+                return Ok($"Hi world");
             }
         }
 
@@ -29,10 +30,10 @@ namespace Cli.Mvc.Tests.Apps.SimpleApp
 
             var output = await ConsoleOut.Collect(() =>
             {
-                app.Run("test hello Bob London");
+                app.Run("test hello --polite");
             });
 
-            var expectedOutput = new[] { "Hello Bob from city of London!" };
+            var expectedOutput = new[] { "Welcome dear World" };
 
             Assert.Equal(expectedOutput, output);
         }
@@ -46,10 +47,10 @@ namespace Cli.Mvc.Tests.Apps.SimpleApp
 
             var output = await ConsoleOut.Collect(() =>
             {
-                app.Run("test hello Bob");
+                app.Run("test hello");
             });
 
-            var expectedOutput = new[] { "Hello Bob from somewhere!" };
+            var expectedOutput = new[] { "Hi world" };
 
             Assert.Equal(expectedOutput, output);
         }
