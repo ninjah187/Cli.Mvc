@@ -20,14 +20,7 @@ namespace Cli.Mvc.Tests.Apps.SimpleApp
         [Fact]
         public async Task CanRunCommandWithMultipleArguments()
         {
-            var app = new AppBuilder()
-                .UseTypes(typeof(TestController))
-                .Build();
-
-            var output = await ConsoleOut.Collect(() =>
-            {
-                app.Run("test hello Bob London");
-            });
+            var output = await TestHelpers.RunAppWithCommand<TestController>("test hello Bob London");
 
             var expectedOutput = new[] { "Hello Bob from city of London!" };
 
@@ -37,14 +30,7 @@ namespace Cli.Mvc.Tests.Apps.SimpleApp
         [Fact]
         public async Task CanRunCommandWithMultipleArgumentsInsideQuotemarks()
         {
-            var app = new AppBuilder()
-                .UseTypes(typeof(TestController))
-                .Build();
-
-            var output = await ConsoleOut.Collect(() =>
-            {
-                app.Run("test hello \"Bob Charles Bobbington\" \"London\"");
-            });
+            var output = await TestHelpers.RunAppWithCommand<TestController>("test hello \"Bob Charles Bobbington\" \"London\"");
 
             var expectedOutput = new[] { "Hello Bob Charles Bobbington from city of London!" };
 

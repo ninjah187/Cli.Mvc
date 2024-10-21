@@ -30,8 +30,11 @@ namespace Cli.Mvc.Parsing
             if (type == typeof(bool))
             {
                 return _params.ContainsKey(name);
-            }
-            return Convert.ChangeType(_params[name], type);
+            } else if (Nullable.GetUnderlyingType(type) == null)
+            {
+                return Convert.ChangeType(_params[name], type);                
+            } 
+            return null;
         }
 
         public string this[string name]
