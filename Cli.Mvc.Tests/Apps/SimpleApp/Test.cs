@@ -29,14 +29,7 @@ namespace Cli.Mvc.Tests.Apps.SimpleApp
         [Fact]
         public async Task CanRunCommand()
         {
-            var app = new AppBuilder()
-                .UseTypes(typeof(TestController))
-                .Build();
-
-            var output = await ConsoleOut.Collect(() =>
-            {
-                app.Run("test hello");
-            });
+            var output =  await TestHelpers.RunAppWithCommand<TestController>("test hello");
 
             var expectedOutput = new[] { "Hello world!" };
 

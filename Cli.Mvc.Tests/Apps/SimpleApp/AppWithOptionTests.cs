@@ -22,16 +22,9 @@ namespace Cli.Mvc.Tests.Apps.SimpleApp
         }
 
         [Fact]
-        public async Task CanRunCommandWithOptionalArguments()
+        public async Task CanRunCommandWithOption()
         {
-            var app = new AppBuilder()
-                .UseTypes(typeof(TestController))
-                .Build();
-
-            var output = await ConsoleOut.Collect(() =>
-            {
-                app.Run("test hello --polite");
-            });
+            var output = await TestHelpers.RunAppWithCommand<TestController>("test hello --polite");
 
             var expectedOutput = new[] { "Welcome dear World" };
 
@@ -39,16 +32,9 @@ namespace Cli.Mvc.Tests.Apps.SimpleApp
         }
 
         [Fact]
-        public async Task CanRunCommandWithEmptyOptionalArguments()
+        public async Task CanRunCommandWithEmptyOption()
         {
-            var app = new AppBuilder()
-                .UseTypes(typeof(TestController))
-                .Build();
-
-            var output = await ConsoleOut.Collect(() =>
-            {
-                app.Run("test hello");
-            });
+            var output = await TestHelpers.RunAppWithCommand<TestController>("test hello");
 
             var expectedOutput = new[] { "Hi world" };
 

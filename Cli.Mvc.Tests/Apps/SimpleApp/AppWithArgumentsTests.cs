@@ -21,14 +21,7 @@ namespace Cli.Mvc.Tests.Apps.SimpleApp
         [Fact]
         public async Task CanRunCommandWithSingleArgument()
         {
-            var app = new AppBuilder()
-                .UseTypes(typeof(TestController))
-                .Build();
-
-            var output = await ConsoleOut.Collect(() =>
-            {
-                app.Run("test hello Bob");
-            });
+            var output = await TestHelpers.RunAppWithCommand<TestController>("test hello Bob");
 
             var expectedOutput = new[] { "Hello, Bob!" };
 
@@ -38,14 +31,7 @@ namespace Cli.Mvc.Tests.Apps.SimpleApp
         [Fact]
         public async Task CanRunCommandWithSingleArgumentInsideQuotemarks()
         {
-            var app = new AppBuilder()
-                .UseTypes(typeof(TestController))
-                .Build();
-
-            var output = await ConsoleOut.Collect(() =>
-            {
-                app.Run("test hello \"Bob\"");
-            });
+            var output = await TestHelpers.RunAppWithCommand<TestController>("test hello \"Bob\"");
 
             var expectedOutput = new[] { "Hello, Bob!" };
 
@@ -55,14 +41,7 @@ namespace Cli.Mvc.Tests.Apps.SimpleApp
         [Fact]
         public async Task CanRunCommandWithSingleArgumentWhenNoArgumentNotProvided()
         {
-            var app = new AppBuilder()
-                .UseTypes(typeof(TestController))
-                .Build();
-
-            var output = await ConsoleOut.Collect(() =>
-            {
-                app.Run("test hello");
-            });
+            var output = await TestHelpers.RunAppWithCommand<TestController>("test hello");
 
             var expectedOutput = new[] { "Hello, stranger!" };
 
