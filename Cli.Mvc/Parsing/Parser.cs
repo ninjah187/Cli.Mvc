@@ -78,7 +78,7 @@ namespace Cli.Mvc.Parsing
 
                     input.Pop();
 
-                    _options[_optionKey] = _options[_optionKey] + " " + token.Value;
+                    _options[_optionKey] = _options[_optionKey] + " " + token.Value; // <- this is potential place where we swallow whitespaces
                 }
             }
         }

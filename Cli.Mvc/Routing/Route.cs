@@ -9,8 +9,9 @@ namespace Cli.Mvc.Routing
 {
     public class Route
     {
+        // TODO: consider if controller and method should be part of Routing.Route or rather Runtime.RuntimeAction
         public Type Controller { get; }
-        public MethodInfo Method { get; }
+        public MethodInfo Method { get; } // TODO: rename "Method" to "Action" or "ActionMethod" (then rename Controller to ControllerType)
 
         public string ControllerPath { get; }
         public string ActionPath { get; }

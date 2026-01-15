@@ -11,10 +11,15 @@ namespace Cli.Mvc
 {
     public class AppBuilder
     {
+        public IServiceCollection Services { get; } = new ServiceCollection();
+
         Type[] _types;
         Func<IRouter> _routerFactory;
 
-        IServiceCollection _serviceCollection = new ServiceCollection();
+        public AppBuilder UseConfiguration(string configuration)
+        {
+            return this;
+        }
 
         public AppBuilder UseTypes(params Type[] types)
         {
@@ -24,13 +29,13 @@ namespace Cli.Mvc
 
         public AppBuilder UseRouter<T>(Func<IRouter> factory = null) where T : IRouter
         {
-            _routerFactory = factory ?? (() => (T)Activator.CreateInstance(typeof(T)));
+            _routerFactory = factory ?? (() => (T) Activator.CreateInstance(typeof(T)));
             return this;
         }
 
         public AppBuilder AddSingleton<T>() where T : class
         {
-            _serviceCollection.AddSingleton<T>();
+            Services.AddSingleton<T>();
             return this;
         }
 
@@ -39,12 +44,12 @@ namespace Cli.Mvc
             var types = _types ?? Assembly.GetCallingAssembly().GetTypes();
             var router = _routerFactory?.Invoke() ?? new RouterBuilder(types).Build();
 
-            _serviceCollection.AddSingleton(typeof(IRouter), router);
-            _serviceCollection.AddSingleton(typeof(IRenderer), typeof(ConsoleRenderer));
+            Services.AddSingleton(typeof(IRouter), router);
+            Services.AddSingleton(typeof(IRenderer), typeof(ConsoleRenderer));
 
             Startup(types);
 
-            var serviceProvider = _serviceCollection.BuildServiceProvider();
+            var serviceProvider = Services.BuildServiceProvider();
 
             return new App(serviceProvider);
         }
@@ -60,7 +65,7 @@ namespace Cli.Mvc
 
             var startup = Activator.CreateInstance(startupType);
 
-            startupType.GetMethod("ConfigureServices")?.Invoke(startup, new[] { _serviceCollection });
+            startupType.GetMethod("ConfigureServices")?.Invoke(startup, new[] { Services });
         }
     }
 }

@@ -4,16 +4,9 @@ using System.Text;
 
 namespace Cli.Mvc
 {
-    [AttributeUsage(AttributeTargets.Property)]
+    [AttributeUsage(AttributeTargets.Parameter)]
     public class OptionAttribute : Attribute
     {
-        public string Name { get; }
         public string Description { get; }
-
-        public OptionAttribute(string name, string description)
-        {
-            Name = name;
-            Description = description;
-        }
     }
 }

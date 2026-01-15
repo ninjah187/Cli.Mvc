@@ -1,0 +1,20 @@
+<Project>
+  <!-- Register custom MSBuild task -->
+  <!--<UsingTask TaskName="ParseDocsTask"
+             AssemblyFile="$(MSBuildProjectDirectory)\bin\$(Configuration)\$(TargetFramework)\Cli.Mvc.XmlDocs.dll" />-->
+
+  <UsingTask TaskName="ParseDocsTask"
+             AssemblyFile="$(MSBuildThisFileDirectory)bin\$(Configuration)\netstandard2.0\Cli.Mvc.XmlDocs.dll" />
+
+  <Target Name="ParseXmlDocs" AfterTargets="CoreCompile">
+    <!--<Message Text="Running XML doc parser in $(MSBuildProjectDirectory)" Importance="high" />-->
+    <Message Text="Running XML doc parser in $(MSBuildThisFileDirectory)" Importance="high" />
+
+    <!-- Path to the generated XML documentation -->
+    <PropertyGroup>
+      <DocFile>$(DocumentationFile)</DocFile>
+    </PropertyGroup>
+
+    <ParseDocsTask XmlPath="$(DocumentationFile)" />
+  </Target>
+</Project>

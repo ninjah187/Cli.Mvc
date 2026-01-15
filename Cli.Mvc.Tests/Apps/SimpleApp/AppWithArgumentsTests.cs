@@ -11,62 +11,23 @@ namespace Cli.Mvc.Tests.Apps.SimpleApp
     {
         class TestController : Controller
         {
-            public IActionResult Hello(string name)
+            public IActionResult Hello(string? name)
             {
-                name = name ?? "stranger";
+                name ??= "stranger";
                 return Ok($"Hello, {name}!");
             }
         }
 
-        [Fact]
-        public async Task CanRunCommandWithSingleArgument()
+        [Theory]
+        [InlineData("test hello Bob",                        "Hello, Bob!")]
+        [InlineData("test hello Bob Charles Bobbington",     "Hello, Bob!")] // Only first argument is bound to action parameter. Rest is available in Controller.Arguments list.
+        [InlineData("test hello \"Bob\"",                    "Hello, Bob!")]
+        [InlineData("test hello \"Bob Charles Bobbington\"", "Hello, Bob Charles Bobbington!")]
+        [InlineData("test hello",                            "Hello, stranger!")]
+        [InlineData("test hello \"\"",                       "Hello, !")]
+        public async Task CanRunCommand(string command, string expectedOutput)
         {
-            var app = new AppBuilder()
-                .UseTypes(typeof(TestController))
-                .Build();
-
-            var output = await ConsoleOut.Collect(() =>
-            {
-                app.Run("test hello Bob");
-            });
-
-            var expectedOutput = new[] { "Hello, Bob!" };
-
-            Assert.Equal(expectedOutput, output);
-        }
-
-        [Fact]
-        public async Task CanRunCommandWithSingleArgumentInsideQuotemarks()
-        {
-            var app = new AppBuilder()
-                .UseTypes(typeof(TestController))
-                .Build();
-
-            var output = await ConsoleOut.Collect(() =>
-            {
-                app.Run("test hello \"Bob\"");
-            });
-
-            var expectedOutput = new[] { "Hello, Bob!" };
-
-            Assert.Equal(expectedOutput, output);
-        }
-
-        [Fact]
-        public async Task CanRunCommandWithSingleArgumentWhenNoArgumentNotProvided()
-        {
-            var app = new AppBuilder()
-                .UseTypes(typeof(TestController))
-                .Build();
-
-            var output = await ConsoleOut.Collect(() =>
-            {
-                app.Run("test hello");
-            });
-
-            var expectedOutput = new[] { "Hello, stranger!" };
-
-            Assert.Equal(expectedOutput, output);
+            await ControllerTest.Run<TestController>(command, expectedOutput);
         }
     }
 }

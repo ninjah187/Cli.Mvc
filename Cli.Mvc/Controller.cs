@@ -17,8 +17,16 @@ namespace Cli.Mvc
         public Params Options => CommandContext.Options;
 
         protected IActionResult Ok(string message) => new MessageView(message);
-        protected IActionResult Error(string message) => new MessageView(message);
-        protected IActionResult Help() => new HelpView(CommandContext.Path);
+        protected IActionResult Error(string message, int? exitCode = null)
+        {
+            if (exitCode != null)
+            {
+                Environment.ExitCode = exitCode.Value;
+            }
+
+            return new MessageView(message);
+        }
+        protected IActionResult Help() => new HelpView(CommandContext.Route.Path);
 
         protected IActionResult List<T>(IEnumerable<T> source, Func<T, string> mapper) => new ListView<T>(source, mapper);
 

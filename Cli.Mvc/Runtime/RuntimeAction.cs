@@ -105,7 +105,7 @@ namespace Cli.Mvc.Runtime
 
         ICommandContext BuildContext()
         {
-            return new CommandContext(Command, Route.Path, Arguments, Options);
+            return new CommandContext(Command, Route, Arguments, Options);
         }
     }
 }
