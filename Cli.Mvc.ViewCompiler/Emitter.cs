@@ -135,27 +135,48 @@ namespace Cli.Mvc.ViewCompiler
             return $"""sb.Append({node.Value.TrimStart('@')});""";
         }
 
-        string EmitNode(ForeachNode node)
+        string EmitNode(ForeachNode node, int indentationLevel = 1)
         {
             var code =
                 $$"""
                 foreach {{node.Condition}}
-                {
-                {{EmitNodes(node.Body)}}
-                }
+                {{ Indent("{", 3) }}
+                {{ EmitNodes(node.Body) }}
+                {{ Indent("}", 3) }}
                 """;
 
             return code;
         }
 
-        string EmitNodes(IEnumerable<Node> nodes)
+        static string Indent(string value, int indentationLevel = 1)
         {
             var sb = new StringBuilder();
 
-            foreach (var node in nodes)
+            for (int i = 0; i < indentationLevel * 4; i++)
             {
+                sb.Append(" ");
+            }
+
+            sb.Append(value);
+
+            return sb.ToString();
+        }
+
+        string EmitNodes(IReadOnlyList<Node> nodes)
+        {
+            var sb = new StringBuilder();
+
+            for (int i = 0; i < nodes.Count; i++)
+            {
+                var node = nodes[i];
+
+                sb.Append("                ");
                 sb.Append(EmitNode(node));
-                sb.Append("\r\n");
+                
+                if (i < nodes.Count - 1)
+                {
+                    sb.Append("\r\n");
+                }
             }
 
             return sb.ToString();
