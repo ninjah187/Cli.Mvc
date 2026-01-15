@@ -43,6 +43,36 @@
             Assert.Equivalent(expected, result, true);
         }
 
+        [Fact]
+        public void CanTokenizeIf()
+        {
+            var template =
+                """
+                @model List<Cli.Mvc.Examples.Razor.Models.Ninja>
+
+                @if (Model.Count == 0)
+                {
+                    Nothing to show
+                }
+                """;
+
+            var expected = new List<Token>
+            {
+                new("@model", TokenType.ModelTypeDeclaration), new(" ", TokenType.Whitespace), new("List<Cli.Mvc.Examples.Razor.Models.Ninja>", TokenType.Text), new("\r\n", TokenType.Whitespace),
+                new("\r\n", TokenType.Whitespace),
+                new("@if", TokenType.If), new(" ", TokenType.Whitespace), new("(Model.Count", TokenType.Text), new(" ", TokenType.Whitespace), new("==", TokenType.Text), new(" ", TokenType.Whitespace), new("0)", TokenType.Text), new("\r\n", TokenType.Whitespace),
+                new("{", TokenType.LeftBrace), new("\r\n", TokenType.Whitespace),
+                new(" ", TokenType.Whitespace), new(" ", TokenType.Whitespace), new(" ", TokenType.Whitespace), new(" ", TokenType.Whitespace), new("Nothing", TokenType.Text), new(" ", TokenType.Whitespace), new("to", TokenType.Text), new(" ", TokenType.Whitespace), new("show", TokenType.Text), new("\r\n", TokenType.Whitespace),
+                new("}", TokenType.RightBrace),
+            };
+
+            var tokenizer = new Tokenizer();
+
+            var result = tokenizer.Tokenize(template);
+
+            Assert.Equivalent(expected, result, true);
+        }
+
         public static IEnumerable<object[]> TestData()
         {
             yield return ["hello world", new List<Token> { new("hello", TokenType.Text), new(" ", TokenType.Whitespace), new("world", TokenType.Text) }];

@@ -17,7 +17,8 @@ namespace Cli.Mvc.ViewCompiler
         LeftParenthesis,
         RightParenthesis,
         LeftBrace,
-        RightBrace
+        RightBrace,
+        If
     }
 
     public class Tokenizer
@@ -61,6 +62,12 @@ namespace Cli.Mvc.ViewCompiler
             if (word == "@foreach")
             {
                 yield return new Token(word, TokenType.ForEach);
+                yield break;
+            }
+
+            if (word == "@if")
+            {
+                yield return new Token(word, TokenType.If);
                 yield break;
             }
 

@@ -92,5 +92,33 @@ namespace Cli.Mvc.ViewCompiler.Tests
 
             Assert.Equivalent(expectedTree, tree, true);
         }
+
+        [Fact]
+        public void CanParseIf()
+        {
+            var text = """
+                @model List<Cli.Mvc.Examples.Razor.Models.Ninja>
+
+                @if (Model.Count == 0)
+                {
+                    Nothing to show
+                }
+                """;
+
+            var expectedTree = new AbstractSyntaxTree([
+                    new ModelTypeDeclarationNode("@model", "List<Cli.Mvc.Examples.Razor.Models.Ninja>"),
+                    new TextNode("\r\n\r\n"),
+                    new IfNode("@if", "(Model.Count == 0)",
+                        [
+                            new TextNode("Nothing to show\r\n")
+                        ])
+                ]);
+
+            var parser = new Parser();
+
+            var tree = parser.Parse(text);
+
+            Assert.Equivalent(expectedTree, tree, true);
+        }
     }
 }

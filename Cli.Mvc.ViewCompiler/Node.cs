@@ -35,4 +35,10 @@ namespace Cli.Mvc.ViewCompiler
         public string Condition { get; } = condition;
         public IReadOnlyList<Node> Body { get; } = body;
     }
+
+    public class IfNode(string value, string condition, IReadOnlyList<Node> body) : Node(value)
+    {
+        public string Condition { get; } = condition;
+        public IReadOnlyList<Node> Body { get; } = body;
+    }
 }

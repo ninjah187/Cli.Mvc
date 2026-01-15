@@ -55,7 +55,8 @@ namespace Cli.Mvc.ViewCompiler
                 Text,
                 Variable,
                 ModelTypeDeclaration,
-                Foreach
+                Foreach,
+                If
             );
 
             if (node == null)
@@ -205,6 +206,31 @@ namespace Cli.Mvc.ViewCompiler
             var body = Parse_2(bodyTokens);
 
             return new ForeachNode(token.Value, condition, body);
+        }
+
+        static Node? If(Token token, Stack<Token> stack)
+        {
+            if (token.Type != TokenType.If)
+            {
+                return null;
+            }
+
+            stack.PopWhile(t => t.Value == " "); // skip spaces
+
+            var conditionTokens = stack.PopUntil(token => token.Value.EndsWith(")")).ToList();
+            var condition = string.Join("", conditionTokens.Select(t => t.Value));
+
+            stack.PopWhile(t => t.Value == "\r\n"); // skip line breaks
+
+            var bodyTokens = stack.PopUntil(t => t.Type == TokenType.RightBrace).ToList();
+            bodyTokens = bodyTokens
+                .TakeWhile(t => t.Type != TokenType.RightBrace)
+                .SkipWhile(t => t.Type == TokenType.LeftBrace || t.Type == TokenType.Whitespace)
+                .ToList();
+
+            var body = Parse_2(bodyTokens);
+
+            return new IfNode(token.Value, condition, body);
         }
     }
 }

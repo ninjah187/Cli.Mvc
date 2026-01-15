@@ -1,6 +1,22 @@
 @model List<Cli.Mvc.Examples.Razor.Models.Ninja>
 
-Hello world!
+####################
+### Hello world! ###
+####################
+
+----------------------------------------
+| Table       | Column A    | Column B |
+----------------------------------------
+@foreach (var ninja in Model)
+{
+| @ninja.Name | @ninja.Name |
+}
+|-------------|------------------------|
+
+@if (Model.Count == 0)
+{
+    Nothing to show
+}
 
 @foreach (var ninja in Model)
 {

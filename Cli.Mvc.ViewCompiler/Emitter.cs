@@ -70,7 +70,7 @@ namespace Cli.Mvc.ViewCompiler
 
                 if (node is ModelTypeDeclarationNode)
                 {
-                    // This node is rendered above, in a class rendering process.
+                    // This node is already rendered in a class rendering process.
                     continue;
                 }
 
@@ -113,10 +113,11 @@ namespace Cli.Mvc.ViewCompiler
         {
             return node switch
             {
-                TextNode text => EmitNode(text),
+                TextNode text         => EmitNode(text),
                 VariableNode variable => EmitNode(variable),
-                ForeachNode @foreach => EmitNode(@foreach),
-                _ => throw new EmitterException($"Cannot emit node: {node.Value}")
+                ForeachNode @foreach  => EmitNode(@foreach),
+                IfNode @if            => EmitNode(@if),
+                _                     => throw new EmitterException($"Cannot emit node: {node.Value}")
             };
         }
 
@@ -143,6 +144,19 @@ namespace Cli.Mvc.ViewCompiler
                 {{ Indent("{", 3) }}
                 {{ EmitNodes(node.Body) }}
                 {{ Indent("}", 3) }}
+                """;
+
+            return code;
+        }
+
+        string EmitNode(IfNode node, int indentationLevel = 1)
+        {
+            var code =
+                $$"""
+                if {{node.Condition}}
+                {{Indent("{", 3)}}
+                {{EmitNodes(node.Body)}}
+                {{Indent("}", 3)}}
                 """;
 
             return code;

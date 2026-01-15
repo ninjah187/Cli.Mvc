@@ -20,9 +20,13 @@ namespace Cli.Mvc.Examples.Razor.Controllers
 
             var view = new WorldView(ninjas);
 
-            Console.WriteLine(view.Render());
+            // Console.WriteLine(view.Render());
 
-            return Ok("Success!");
+            // Console.Write();
+
+            return Ok(view.Render());
+
+            // return Ok("Success!");
         }
     }
 }
