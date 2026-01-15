@@ -60,7 +60,37 @@ namespace Cli.Mvc.ViewCompiler.Tests
 
             var tree = parser.Parse(text);
 
-            Assert.Equivalent(expectedTree, tree);
+            Assert.Equivalent(expectedTree, tree, true);
+        }
+
+        [Fact]
+        public void CanParseForeach()
+        {
+            var text = """
+                @model List<Cli.Mvc.Examples.Razor.Models.Ninja>
+
+                @foreach (var ninja in Model)
+                {
+                    - @ninja.Name
+                }
+                """;
+
+            var expectedTree = new AbstractSyntaxTree([
+                    new ModelTypeDeclarationNode("@model", "List<Cli.Mvc.Examples.Razor.Models.Ninja>"),
+                    new TextNode("\r\n\r\n"),
+                    new ForeachNode("@foreach", "(var ninja in Model)",
+                        [
+                            new TextNode("- "),
+                            new VariableNode("@ninja.Name"),
+                            new TextNode("\r\n")
+                        ])
+                ]);
+
+            var parser = new Parser();
+
+            var tree = parser.Parse(text);
+
+            Assert.Equivalent(expectedTree, tree, true);
         }
     }
 }

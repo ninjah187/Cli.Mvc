@@ -11,63 +11,40 @@ namespace Cli.Mvc.ViewCompiler
     {
         Text,
         Variable, // Rename to expression?
-        ModelTypeDeclaration,
-        Whitespace
+        ModelTypeDeclaration, // Rename to directive. same for @using = UsingDirectiveNode
+        Whitespace,
+        ForEach,
+        LeftParenthesis,
+        RightParenthesis,
+        LeftBrace,
+        RightBrace
     }
 
     public class Tokenizer
     {
         public IReadOnlyList<Token> Tokenize(string text)
         {
-            //var words = text.Split([" "], StringSplitOptions.RemoveEmptyEntries);
-
-            //var tokens = words.SelectMany(Classify).ToList();
-
-            //return tokens;
-
             var tokens = new List<Token>();
 
-            // var lines = text.Split(["\n", "\r\n"], StringSplitOptions.None);
             var lines = Regex.Split(text, "(\n|\r\n)");
 
-            // foreach (var line in lines)
             for (int lineIndex = 0; lineIndex < lines.Length; lineIndex++)
             {
                 var line = lines[lineIndex];
 
                 if (line == "")
                 {
-                    // TODO: consider whether leave empty lines or not.
                     continue;
                 }
 
-                // var words = line.Split(' ');
+                var words = Regex.Split(line, "( )").Where(word => word != "").ToArray();
 
-                var words = Regex.Split(line, "( )");
-
-                // foreach (var word in words)
                 for (int wordIndex = 0; wordIndex < words.Length; wordIndex++)
                 {
                     var word = words[wordIndex];
 
                     tokens.AddRange(Classify(word));
-
-                    //if (wordIndex == words.Length - 1)
-                    //{
-                    //    // last element. do not add trailing space
-                    //    continue;
-                    //}
-
-                    //tokens.Add(new Token(" ", TokenType.Whitespace));
                 }
-
-                //if (lineIndex == lines.Length - 1)
-                //{
-                //    // last line. do not add trailing line-break
-                //    continue;
-                //}
-
-                //tokens.Add(new Token("\r\n", TokenType.Whitespace));
             }
 
             return tokens;
@@ -78,6 +55,36 @@ namespace Cli.Mvc.ViewCompiler
             if (word == "@model")
             {
                 yield return new Token(word, TokenType.ModelTypeDeclaration);
+                yield break;
+            }
+
+            if (word == "@foreach")
+            {
+                yield return new Token(word, TokenType.ForEach);
+                yield break;
+            }
+
+            if (word == "(")
+            {
+                yield return new Token(word, TokenType.LeftParenthesis);
+                yield break;
+            }
+
+            if (word == ")")
+            {
+                yield return new Token(word, TokenType.RightParenthesis);
+                yield break;
+            }
+
+            if (word == "{")
+            {
+                yield return new Token(word, TokenType.LeftBrace);
+                yield break;
+            }
+
+            if (word == "}")
+            {
+                yield return new Token(word, TokenType.RightBrace);
                 yield break;
             }
 

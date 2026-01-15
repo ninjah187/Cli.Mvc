@@ -30,6 +30,21 @@ namespace Cli.Mvc.ViewCompiler
             return tree;
         }
 
+        public static IReadOnlyList<Node> Parse_2(IReadOnlyList<Token> tokens)
+        {
+            var stack = new Stack<Token>(tokens.Reverse());
+
+            var nodes = new List<Node>();
+
+            while (stack.Count > 0)
+            {
+                var node = ProcessNode(stack);
+                nodes.Add(node);
+            }
+
+            return nodes;
+        }
+
         static Node ProcessNode(Stack<Token> stack)
         {
             var token = stack.Pop();
@@ -39,7 +54,8 @@ namespace Cli.Mvc.ViewCompiler
                 stack,
                 Text,
                 Variable,
-                ModelTypeDeclaration
+                ModelTypeDeclaration,
+                Foreach
             );
 
             if (node == null)
@@ -163,6 +179,32 @@ namespace Cli.Mvc.ViewCompiler
             }
 
             return null;
+        }
+
+        static Node? Foreach(Token token, Stack<Token> stack)
+        {
+            if (token.Type != TokenType.ForEach)
+            {
+                return null;
+            }
+
+            stack.PopWhile(t => t.Value == " "); // skip spaces
+
+            var conditionTokens = stack.PopUntil(token => token.Value.EndsWith(")")).ToList();
+            var condition = string.Join("", conditionTokens.Select(t => t.Value));
+
+            stack.PopWhile(t => t.Value == "\r\n"); // skip line breaks
+
+            var bodyTokens = stack.PopUntil(t => t.Type == TokenType.RightBrace).ToList();
+            //bodyTokens = [.. bodyTokens.Take(bodyTokens.Count - 1).Skip(1)]; // skip '{' and '}'
+            bodyTokens = bodyTokens
+                .TakeWhile(t => t.Type != TokenType.RightBrace)
+                .SkipWhile(t => t.Type == TokenType.LeftBrace || t.Type == TokenType.Whitespace)
+                .ToList();
+
+            var body = Parse_2(bodyTokens);
+
+            return new ForeachNode(token.Value, condition, body);
         }
     }
 }

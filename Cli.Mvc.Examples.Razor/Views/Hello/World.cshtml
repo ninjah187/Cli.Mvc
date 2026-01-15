@@ -1,5 +1,6 @@
-@model Cli.Mvc.Examples.Razor.Models.Ninja
+@model List<Cli.Mvc.Examples.Razor.Models.Ninja>
 
-Hello world @Model.Name
-
-Template rendering works!
+@foreach (var ninja in Model)
+{
+    @ninja.Name
+}

@@ -12,9 +12,13 @@ namespace Cli.Mvc.Examples.Razor.Controllers
     {
         public IActionResult View()
         {
-            var ninja = new Ninja("Karol");
+            var ninjas = new List<Ninja>
+            {
+                new("Karol"),
+                new("Lexi")
+            };
 
-            var view = new WorldView(ninja);
+            var view = new WorldView(ninjas);
 
             Console.WriteLine(view.Render());
 

@@ -29,4 +29,10 @@ namespace Cli.Mvc.ViewCompiler
 
         public string ModelType { get; } = modelType;
     }
+
+    public class ForeachNode(string value, string condition, IReadOnlyList<Node> body) : Node(value)
+    {
+        public string Condition { get; } = condition;
+        public IReadOnlyList<Node> Body { get; } = body;
+    }
 }

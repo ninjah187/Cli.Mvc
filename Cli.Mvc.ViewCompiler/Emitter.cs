@@ -20,71 +20,6 @@ namespace Cli.Mvc.ViewCompiler
 
     public class ViewRenderingCodeEmitter 
     {
-        //public string Emit(AbstractSyntaxTree tree)
-        //{
-        //    var sb = new StringBuilder();
-
-        //    foreach (var node in tree.Nodes)
-        //    {
-        //        _ = node switch
-        //        {
-        //            TextNode text => sb.Append(text.Value),
-        //            VariableNode variable => sb.Append(variable.Value),
-        //            _             => throw new EmitterException("blah")
-        //        };
-        //    }
-
-        //    return sb.ToString();
-        //}
-
-        public string EmitRenderingCode(AbstractSyntaxTree tree)
-        {
-            var sb = new StringBuilder();
-
-            for (int i = 0; i < tree.Nodes.Count; i++)
-            {
-                var node = tree.Nodes[i];
-
-                if (node is ModelTypeDeclarationNode)
-                {
-                    // Rendered in class.
-                    continue;
-                }
-
-                sb.Append(EmitNode(node));
-
-                if (i < tree.Nodes.Count - 1)
-                {
-                    sb.Append("\r\n");
-                    sb.Append("            "); // 3 x 4 spaces = 4 tabs
-                }
-            }
-
-            //foreach (var node in tree.Nodes)
-            //{
-            //    //_ = node switch
-            //    //{
-            //    //    TextNode text => sb.Append(EmitNode(text)),
-            //    //    ModelTypeDeclarationNode modelTypeDeclarationNode => 
-            //    //    // VariableNode variable => sb.Append(variable.Value),
-            //    //    _ => throw new EmitterException($"Cannot emit node: {node.Value}")
-            //    //};
-
-            //    if (node is ModelTypeDeclarationNode)
-            //    {
-            //        // Rendered in class.
-            //        continue;
-            //    }
-
-            //    sb.Append(EmitNode(node));
-
-            //    sb.Append("\r\n");
-            //    sb.Append("            "); // 3 x 4 spaces = 4 tabs
-            //}
-
-            return sb.ToString();
-        }
-
         public string EmitClass(string @namespace, string fileName, string template)
         {
             var tree = new Parser().Parse(template);
@@ -125,6 +60,32 @@ namespace Cli.Mvc.ViewCompiler
             return code;
         }
 
+        string EmitRenderingCode(AbstractSyntaxTree tree)
+        {
+            var sb = new StringBuilder();
+
+            for (int i = 0; i < tree.Nodes.Count; i++)
+            {
+                var node = tree.Nodes[i];
+
+                if (node is ModelTypeDeclarationNode)
+                {
+                    // This node is rendered above, in a class rendering process.
+                    continue;
+                }
+
+                sb.Append(EmitNode(node));
+
+                if (i < tree.Nodes.Count - 1)
+                {
+                    sb.Append("\r\n");
+                    sb.Append("            "); // 3 x 4 spaces = 4 tabs
+                }
+            }
+
+            return sb.ToString();
+        }
+
         static string? GetModelNamespace(string? modelType)
         {
             if (modelType == null)
@@ -154,6 +115,7 @@ namespace Cli.Mvc.ViewCompiler
             {
                 TextNode text => EmitNode(text),
                 VariableNode variable => EmitNode(variable),
+                ForeachNode @foreach => EmitNode(@foreach),
                 _ => throw new EmitterException($"Cannot emit node: {node.Value}")
             };
         }
@@ -165,12 +127,38 @@ namespace Cli.Mvc.ViewCompiler
                 .Replace("\n", "\\n")
                 .Replace("\r", "\\r");
             
-            return $"""sb.Append("{formattedValue}");"""; // TODO: avoid string concatenations for performance
+            return $"""sb.Append("{formattedValue}");""";
         }
 
         string EmitNode(VariableNode node)
         {
             return $"""sb.Append({node.Value.TrimStart('@')});""";
+        }
+
+        string EmitNode(ForeachNode node)
+        {
+            var code =
+                $$"""
+                foreach {{node.Condition}}
+                {
+                {{EmitNodes(node.Body)}}
+                }
+                """;
+
+            return code;
+        }
+
+        string EmitNodes(IEnumerable<Node> nodes)
+        {
+            var sb = new StringBuilder();
+
+            foreach (var node in nodes)
+            {
+                sb.Append(EmitNode(node));
+                sb.Append("\r\n");
+            }
+
+            return sb.ToString();
         }
     }
 }
