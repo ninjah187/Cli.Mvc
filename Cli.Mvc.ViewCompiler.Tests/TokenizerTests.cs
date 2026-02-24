@@ -2,15 +2,34 @@
 {
     public class TokenizerTests
     {
-        [Theory]
-        [MemberData(nameof(TestData))]
-        public void Success(string input, IReadOnlyList<Token> expected)
+        [Fact]
+        public void CanTokenizeHelloWorld()
         {
-            var tokenizer = new Tokenizer();
+            var template = "hello world";
 
-            var result = tokenizer.Tokenize(input);
+            var expected = new List<Token>
+            {
+                new("hello", TokenType.Text, 0), new(" ", TokenType.Whitespace, 0), new("world", TokenType.Text, 0)
+            };
 
-            Assert.Equivalent(expected, result, true);
+            var result = Tokenize(template);
+
+            AssertResult(expected, result);
+        }
+
+        [Fact]
+        public void CanTokenizeSimpleVariableAccess()
+        {
+            var template = "hello @Model.Name";
+
+            var expected = new List<Token>
+            {
+                new("hello", TokenType.Text, 0), new(" ", TokenType.Whitespace, 0), new("@Model.Name", TokenType.Variable, 0)
+            };
+
+            var result = Tokenize(template);
+
+            AssertResult(expected, result);
         }
 
         [Fact]
@@ -28,19 +47,17 @@
 
             var expected = new List<Token>
             {
-                new("@model", TokenType.ModelTypeDeclaration), new(" ", TokenType.Whitespace), new("List<Cli.Mvc.Examples.Razor.Models.Ninja>", TokenType.Text), new("\r\n", TokenType.Whitespace),
-                new("\r\n", TokenType.Whitespace),
-                new("@foreach", TokenType.ForEach), new(" ", TokenType.Whitespace), new("(var", TokenType.Text), new(" ", TokenType.Whitespace), new("ninja", TokenType.Text), new(" ", TokenType.Whitespace), new("in", TokenType.Text), new(" ", TokenType.Whitespace), new("Model)", TokenType.Text), new("\r\n", TokenType.Whitespace),
-                new("{", TokenType.LeftBrace), new("\r\n", TokenType.Whitespace),
-                new(" ", TokenType.Whitespace), new(" ", TokenType.Whitespace), new(" ", TokenType.Whitespace), new(" ", TokenType.Whitespace), new("@ninja.Name", TokenType.Variable), new("\r\n", TokenType.Whitespace),
-                new("}", TokenType.RightBrace),
+                new("@model", TokenType.ModelTypeDeclaration, 0), new(" ", TokenType.Whitespace, 0), new("List<Cli.Mvc.Examples.Razor.Models.Ninja>", TokenType.Text, 0), new("\r\n", TokenType.Whitespace, 0),
+                new("\r\n", TokenType.Whitespace, 1),
+                new("@foreach", TokenType.ForEach, 2), new(" ", TokenType.Whitespace, 2), new("(var", TokenType.Text, 2), new(" ", TokenType.Whitespace, 2), new("ninja", TokenType.Text, 2), new(" ", TokenType.Whitespace, 2), new("in", TokenType.Text, 2), new(" ", TokenType.Whitespace, 2), new("Model)", TokenType.Text, 2), new("\r\n", TokenType.Whitespace, 2),
+                new("{", TokenType.LeftBrace, 3), new("\r\n", TokenType.Whitespace, 3),
+                new(" ", TokenType.Whitespace, 4), new(" ", TokenType.Whitespace, 4), new(" ", TokenType.Whitespace, 4), new(" ", TokenType.Whitespace, 4), new("@ninja.Name", TokenType.Variable, 4), new("\r\n", TokenType.Whitespace, 4),
+                new("}", TokenType.RightBrace, 5),
             };
 
-            var tokenizer = new Tokenizer();
+            var result = Tokenize(template);
 
-            var result = tokenizer.Tokenize(template);
-
-            Assert.Equivalent(expected, result, true);
+            AssertResult(expected, result);
         }
 
         [Fact]
@@ -58,61 +75,48 @@
 
             var expected = new List<Token>
             {
-                new("@model", TokenType.ModelTypeDeclaration), new(" ", TokenType.Whitespace), new("List<Cli.Mvc.Examples.Razor.Models.Ninja>", TokenType.Text), new("\r\n", TokenType.Whitespace),
-                new("\r\n", TokenType.Whitespace),
-                new("@if", TokenType.If), new(" ", TokenType.Whitespace), new("(Model.Count", TokenType.Text), new(" ", TokenType.Whitespace), new("==", TokenType.Text), new(" ", TokenType.Whitespace), new("0)", TokenType.Text), new("\r\n", TokenType.Whitespace),
-                new("{", TokenType.LeftBrace), new("\r\n", TokenType.Whitespace),
-                new(" ", TokenType.Whitespace), new(" ", TokenType.Whitespace), new(" ", TokenType.Whitespace), new(" ", TokenType.Whitespace), new("Nothing", TokenType.Text), new(" ", TokenType.Whitespace), new("to", TokenType.Text), new(" ", TokenType.Whitespace), new("show", TokenType.Text), new("\r\n", TokenType.Whitespace),
-                new("}", TokenType.RightBrace),
+                new("@model", TokenType.ModelTypeDeclaration, 0), new(" ", TokenType.Whitespace, 0), new("List<Cli.Mvc.Examples.Razor.Models.Ninja>", TokenType.Text, 0), new("\r\n", TokenType.Whitespace, 0),
+                new("\r\n", TokenType.Whitespace, 1),
+                new("@if", TokenType.If, 2), new(" ", TokenType.Whitespace, 2), new("(Model.Count", TokenType.Text, 2), new(" ", TokenType.Whitespace, 2), new("==", TokenType.Text, 2), new(" ", TokenType.Whitespace, 2), new("0)", TokenType.Text, 2), new("\r\n", TokenType.Whitespace, 2),
+                new("{", TokenType.LeftBrace, 3), new("\r\n", TokenType.Whitespace, 3),
+                new(" ", TokenType.Whitespace, 4), new(" ", TokenType.Whitespace, 4), new(" ", TokenType.Whitespace, 4), new(" ", TokenType.Whitespace, 4), new("Nothing", TokenType.Text, 4), new(" ", TokenType.Whitespace, 4), new("to", TokenType.Text, 4), new(" ", TokenType.Whitespace, 4), new("show", TokenType.Text, 4), new("\r\n", TokenType.Whitespace, 4),
+                new("}", TokenType.RightBrace, 5),
             };
 
-            var tokenizer = new Tokenizer();
-
-            var result = tokenizer.Tokenize(template);
-
-            Assert.Equivalent(expected, result, true);
+            var result = Tokenize(template);
+            
+            AssertResult(expected, result);
         }
 
-        public static IEnumerable<object[]> TestData()
+        [Fact]
+        public void CanTokenizeModelDeclarationAndVariableAccess()
         {
-            yield return ["hello world", new List<Token> { new("hello", TokenType.Text), new(" ", TokenType.Whitespace), new("world", TokenType.Text) }];
-            yield return ["hello @Name", new List<Token> { new("hello", TokenType.Text), new(" ", TokenType.Whitespace), new("@Name", TokenType.Variable) }];
-            yield return ComplexCase();
-            // yield return ForeachCase();
-        }
-
-        public static object[] ComplexCase() => [
-            """
+            var template = """
             @model Cli.Mvc.Examples.Razor.Models.Ninja
 
             Hello @Model.Name
-            """,
-            new List<Token>
+            """;
+
+            var expected = new List<Token>
             {
-                new("@model", TokenType.ModelTypeDeclaration), new(" ", TokenType.Whitespace), new("Cli.Mvc.Examples.Razor.Models.Ninja", TokenType.Text), new("\r\n", TokenType.Whitespace),
-                new("\r\n", TokenType.Whitespace),
-                new("Hello", TokenType.Text), new(" ", TokenType.Whitespace), new("@Model.Name", TokenType.Variable)
-            }
-        ];
+                new("@model", TokenType.ModelTypeDeclaration, 0), new(" ", TokenType.Whitespace, 0), new("Cli.Mvc.Examples.Razor.Models.Ninja", TokenType.Text, 0), new("\r\n", TokenType.Whitespace, 0),
+                new("\r\n", TokenType.Whitespace, 1),
+                new("Hello", TokenType.Text, 2), new(" ", TokenType.Whitespace, 2), new("@Model.Name", TokenType.Variable, 2)
+            };
 
-        //public static object[] ForeachCase() => [
-        //    """
-        //    @model List<Cli.Mvc.Examples.Razor.Models.Ninja>
+            var result = Tokenize(template);
+            
+            AssertResult(expected, result);
+        }
 
-        //    @foreach (var ninja in Model)
-        //    {
-        //        @ninja.Name
-        //    }
-        //    """,
-        //    new List<Token>
-        //    {
-        //        new("@model", TokenType.ModelTypeDeclaration), new(" ", TokenType.Whitespace), new("List<Cli.Mvc.Examples.Razor.Models.Ninja>", TokenType.Text), new("\r\n", TokenType.Whitespace),
-        //        new("\r\n", TokenType.Whitespace),
-        //        new("@foreach", TokenType.ForEach), new(" ", TokenType.Whitespace), new("(var", TokenType.Text), new(" ", TokenType.Whitespace), new("ninja", TokenType.Text), new(" ", TokenType.Whitespace), new("in", TokenType.Text), new(" ", TokenType.Whitespace), new("Model)", TokenType.Text), new("\r\n", TokenType.Whitespace),
-        //        new("{", TokenType.Text), new("\r\n", TokenType.Whitespace),
-        //        new("    ", TokenType.Text), new("@ninja.Name", TokenType.Variable), new("\r\n", TokenType.Whitespace),
-        //        new("}", TokenType.Text),
-        //    }
-        //];
+        static IReadOnlyList<Token> Tokenize(string input)
+        {
+            return new Tokenizer().Tokenize(input);
+        }
+
+        static void AssertResult(IReadOnlyList<Token> expected, IReadOnlyList<Token> actual)
+        {
+            Assert.Equivalent(expected, actual, true);
+        }
     }
 }

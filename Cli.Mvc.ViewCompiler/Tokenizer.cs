@@ -29,6 +29,8 @@ namespace Cli.Mvc.ViewCompiler
 
             var lines = Regex.Split(text, "(\n|\r\n)");
 
+            var lineNumber = 0;
+
             for (int lineIndex = 0; lineIndex < lines.Length; lineIndex++)
             {
                 var line = lines[lineIndex];
@@ -44,91 +46,81 @@ namespace Cli.Mvc.ViewCompiler
                 {
                     var word = words[wordIndex];
 
-                    tokens.AddRange(Classify(word));
+                    tokens.AddRange(Classify(word, lineNumber));
+                }
+
+                if (line == "\n" || line == "\r\n")
+                {
+                    lineNumber++;
                 }
             }
 
             return tokens;
         }
 
-        IEnumerable<Token> Classify(string word)
+        IEnumerable<Token> Classify(string word, int line)
         {
             if (word == "@model")
             {
-                yield return new Token(word, TokenType.ModelTypeDeclaration);
+                yield return new Token(word, TokenType.ModelTypeDeclaration, line);
                 yield break;
             }
 
             if (word == "@foreach")
             {
-                yield return new Token(word, TokenType.ForEach);
+                yield return new Token(word, TokenType.ForEach, line);
                 yield break;
             }
 
             if (word == "@if")
             {
-                yield return new Token(word, TokenType.If);
+                yield return new Token(word, TokenType.If, line);
                 yield break;
             }
 
             if (word == "(")
             {
-                yield return new Token(word, TokenType.LeftParenthesis);
+                yield return new Token(word, TokenType.LeftParenthesis, line);
                 yield break;
             }
 
             if (word == ")")
             {
-                yield return new Token(word, TokenType.RightParenthesis);
+                yield return new Token(word, TokenType.RightParenthesis, line);
                 yield break;
             }
 
             if (word == "{")
             {
-                yield return new Token(word, TokenType.LeftBrace);
+                yield return new Token(word, TokenType.LeftBrace, line);
                 yield break;
             }
 
             if (word == "}")
             {
-                yield return new Token(word, TokenType.RightBrace);
+                yield return new Token(word, TokenType.RightBrace, line);
                 yield break;
             }
 
             if (word.StartsWith("@"))
             {
-                yield return new Token(word, TokenType.Variable);
+                yield return new Token(word, TokenType.Variable, line);
                 yield break;
             }
 
             if (word == " ")
             {
-                yield return new Token(word, TokenType.Whitespace);
+                yield return new Token(word, TokenType.Whitespace, line);
                 yield break;
             }
 
             if (word == "\n" || word == "\r\n")
             {
-                yield return new Token(word, TokenType.Whitespace);
+                yield return new Token(word, TokenType.Whitespace, line);
                 yield break;
             }
 
-            yield return new Token(word, TokenType.Text);
+            yield return new Token(word, TokenType.Text, line);
         }
-
-        //TokenType Classify(string word)
-        //{
-        //    if (word == "@model")
-        //    {
-        //        return TokenType.ModelTypeDeclaration;
-        //    }
-
-        //    if (word.StartsWith("@"))
-        //    {
-        //        return TokenType.Variable;
-        //    }
-
-        //    return TokenType.Text;
-        //}
     }
 }

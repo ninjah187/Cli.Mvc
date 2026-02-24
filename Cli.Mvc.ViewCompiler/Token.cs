@@ -4,10 +4,12 @@ using System.Text;
 
 namespace Cli.Mvc.ViewCompiler
 {
-    public class Token(string value, TokenType type)
+    public class Token(string value, TokenType type, int line)
     {
         public string Value { get; } = value;
         public TokenType Type { get; } = type;
+
+        public int Line { get; } = line;
 
         public override string ToString()
         {
@@ -20,7 +22,7 @@ namespace Cli.Mvc.ViewCompiler
                     .Replace("\r", "\\r");
             }
 
-            return $"Token(\"{formattedValue}\", {Type})";
+            return $"Token(\"{formattedValue}\", {Type}, {Line})";
         }
     }
 }
