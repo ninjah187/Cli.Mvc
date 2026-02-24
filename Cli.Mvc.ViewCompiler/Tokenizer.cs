@@ -30,6 +30,7 @@ namespace Cli.Mvc.ViewCompiler
             var lines = Regex.Split(text, "(\n|\r\n)");
 
             var lineNumber = 0;
+            var column = 0;
 
             for (int lineIndex = 0; lineIndex < lines.Length; lineIndex++)
             {
@@ -46,81 +47,86 @@ namespace Cli.Mvc.ViewCompiler
                 {
                     var word = words[wordIndex];
 
-                    tokens.AddRange(Classify(word, lineNumber));
+                    tokens.AddRange(Classify(word, lineNumber, column));
+
+                    column += word.Length;
                 }
 
                 if (line == "\n" || line == "\r\n")
                 {
                     lineNumber++;
+                    column = 0;
                 }
             }
 
             return tokens;
         }
 
-        IEnumerable<Token> Classify(string word, int line)
+        IEnumerable<Token> Classify(string word, int line, int column)
         {
+            Token CreateToken(string value, TokenType type) => new(value, type, line, column);
+
             if (word == "@model")
             {
-                yield return new Token(word, TokenType.ModelTypeDeclaration, line);
+                yield return CreateToken(word, TokenType.ModelTypeDeclaration);
                 yield break;
             }
 
             if (word == "@foreach")
             {
-                yield return new Token(word, TokenType.ForEach, line);
+                yield return CreateToken(word, TokenType.ForEach);
                 yield break;
             }
 
             if (word == "@if")
             {
-                yield return new Token(word, TokenType.If, line);
+                yield return CreateToken(word, TokenType.If);
                 yield break;
             }
 
             if (word == "(")
             {
-                yield return new Token(word, TokenType.LeftParenthesis, line);
+                yield return CreateToken(word, TokenType.LeftParenthesis);
                 yield break;
             }
 
             if (word == ")")
             {
-                yield return new Token(word, TokenType.RightParenthesis, line);
+                yield return CreateToken(word, TokenType.RightParenthesis);
                 yield break;
             }
 
             if (word == "{")
             {
-                yield return new Token(word, TokenType.LeftBrace, line);
+                yield return CreateToken(word, TokenType.LeftBrace);
                 yield break;
             }
 
             if (word == "}")
             {
-                yield return new Token(word, TokenType.RightBrace, line);
+                yield return CreateToken(word, TokenType.RightBrace);
                 yield break;
             }
 
             if (word.StartsWith("@"))
             {
-                yield return new Token(word, TokenType.Variable, line);
+                yield return CreateToken(word, TokenType.Variable);
                 yield break;
             }
 
             if (word == " ")
             {
-                yield return new Token(word, TokenType.Whitespace, line);
+                yield return CreateToken(word, TokenType.Whitespace);
                 yield break;
             }
 
             if (word == "\n" || word == "\r\n")
             {
-                yield return new Token(word, TokenType.Whitespace, line);
+                yield return CreateToken(word, TokenType.Whitespace);
                 yield break;
             }
 
-            yield return new Token(word, TokenType.Text, line);
+            yield return CreateToken(word, TokenType.Text);
         }
     }
 }

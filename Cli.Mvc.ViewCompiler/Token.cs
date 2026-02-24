@@ -4,12 +4,13 @@ using System.Text;
 
 namespace Cli.Mvc.ViewCompiler
 {
-    public class Token(string value, TokenType type, int line)
+    public class Token(string value, TokenType type, int line, int column)
     {
         public string Value { get; } = value;
         public TokenType Type { get; } = type;
 
         public int Line { get; } = line;
+        public int Column { get; } = column; // Rename to (row, column) or (line, character) or (line, start)???
 
         public override string ToString()
         {
@@ -22,7 +23,7 @@ namespace Cli.Mvc.ViewCompiler
                     .Replace("\r", "\\r");
             }
 
-            return $"Token(\"{formattedValue}\", {Type}, {Line})";
+            return $"Token(\"{formattedValue}\", {Type}, {Line}, {Column})";
         }
     }
 }
