@@ -29,6 +29,7 @@ namespace Cli.Mvc.ViewCompiler
 
             var lines = Regex.Split(text, "(\n|\r\n)");
 
+            var position = 0;
             var lineNumber = 0;
             var column = 0;
 
@@ -47,9 +48,10 @@ namespace Cli.Mvc.ViewCompiler
                 {
                     var word = words[wordIndex];
 
-                    tokens.AddRange(Classify(word, lineNumber, column));
+                    tokens.AddRange(Classify(word, position, lineNumber, column));
 
                     column += word.Length;
+                    position += word.Length;
                 }
 
                 if (line == "\n" || line == "\r\n")
@@ -62,9 +64,9 @@ namespace Cli.Mvc.ViewCompiler
             return tokens;
         }
 
-        IEnumerable<Token> Classify(string word, int line, int column)
+        IEnumerable<Token> Classify(string word, int position, int line, int column)
         {
-            Token CreateToken(string value, TokenType type) => new(value, type, line, column);
+            Token CreateToken(string value, TokenType type) => new(value, type, position, line, column);
 
             if (word == "@model")
             {

@@ -36,7 +36,7 @@ namespace Cli.Mvc.ViewCompiler.Tests
                         {
                             var sb = new StringBuilder();
                 
-                            sb.Append("\r\n\r\nHello world ");
+                            sb.Append("\r\nHello world ");
                             sb.Append(Model.Name);
 
                             return sb.ToString();
