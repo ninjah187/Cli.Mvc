@@ -24,4 +24,8 @@
     <AdditionalFiles Include="Views\**" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Remove="views\hello\World_2.razor" />
+  </ItemGroup>
+
 </Project>

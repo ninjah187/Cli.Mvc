@@ -18,7 +18,7 @@
         }
 
         [Fact]
-        public void CanTokenizeSimpleVariableAccess()
+        public void CanTokenizeTextWithVariable()
         {
             var template = "hello @Model.Name";
 

@@ -85,9 +85,10 @@ namespace Cli.Mvc.ViewCompiler.Tests
                         {
                             var sb = new StringBuilder();
                 
-                            sb.Append("\r\n\r\nHello world!\r\n\r\n");
+                            sb.Append("\r\nHello world!\r\n\r\n");
                             foreach (var ninja in Model)
                             {
+                                sb.Append("    ");
                                 sb.Append(ninja.Name);
                                 sb.Append("\r\n");
                             }

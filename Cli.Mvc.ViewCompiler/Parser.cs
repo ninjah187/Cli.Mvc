@@ -56,7 +56,8 @@ namespace Cli.Mvc.ViewCompiler
                 Variable,
                 ModelTypeDeclaration,
                 Foreach,
-                If
+                If,
+                Block
             );
 
             if (node == null)
@@ -100,7 +101,7 @@ namespace Cli.Mvc.ViewCompiler
 
             if (token.Type == TokenType.Text || token.Type == TokenType.Whitespace)
             {
-                var value = token.Value;
+                // var value = token.Value;
 
                 //var nextToken = stack.Pop();
 
@@ -120,12 +121,19 @@ namespace Cli.Mvc.ViewCompiler
 
                 var nextTokens = PopWhile(stack, t => t.Type == TokenType.Text ||  t.Type == TokenType.Whitespace);
 
-                value += string.Join("", nextTokens.Select(t => t.Value));
+                // value += string.Join("", nextTokens.Select(t => t.Value));
 
-                return new TextNode(value);
+                return new TextNode(Merge(token, nextTokens));
             }
 
             return null;
+        }
+
+        static IReadOnlyList<Token> Merge(Token token, IEnumerable<Token> tokens)
+        {
+            var result = new List<Token> { token };
+            result.AddRange(tokens);
+            return result;
         }
 
         static IEnumerable<Token> PopWhile(Stack<Token> stack, Func<Token, bool> predicate)
@@ -152,7 +160,7 @@ namespace Cli.Mvc.ViewCompiler
         {
             if (token.Type == TokenType.Variable)
             {
-                return new VariableNode(token.Value);
+                return new VariableNode(token);
             }
 
             return null;
@@ -176,7 +184,10 @@ namespace Cli.Mvc.ViewCompiler
                     throw new ParserException($"Model type identifier expected after @model keyword");
                 }
 
-                return new ModelTypeDeclarationNode(token.Value, modelType.Value);
+                // Swallow trailing line break.
+                stack.Pop();
+
+                return new ModelTypeDeclarationNode(token, modelType);
             }
 
             return null;
@@ -191,21 +202,29 @@ namespace Cli.Mvc.ViewCompiler
 
             stack.PopWhile(t => t.Value == " "); // skip spaces
 
-            var conditionTokens = stack.PopUntil(token => token.Value.EndsWith(")")).ToList();
-            var condition = string.Join("", conditionTokens.Select(t => t.Value));
+            var headerTokens = stack
+                .PopUntil(token => token.Value.EndsWith(")"))
+                .Where(token => token.Type != TokenType.Whitespace)
+                .ToList();
+            var condition = string.Join("", headerTokens.Select(t => t.Value));
 
             stack.PopWhile(t => t.Value == "\r\n"); // skip line breaks
 
+            //var bodyTokens = stack.PopUntil(t => t.Type == TokenType.RightBrace).ToList();
+            ////bodyTokens = [.. bodyTokens.Take(bodyTokens.Count - 1).Skip(1)]; // skip '{' and '}'
+            //bodyTokens = bodyTokens
+            //    .TakeWhile(t => t.Type != TokenType.RightBrace)
+            //    .SkipWhile(t => t.Type == TokenType.LeftBrace || t.Type == TokenType.Whitespace)
+            //    .ToList();
+
             var bodyTokens = stack.PopUntil(t => t.Type == TokenType.RightBrace).ToList();
-            //bodyTokens = [.. bodyTokens.Take(bodyTokens.Count - 1).Skip(1)]; // skip '{' and '}'
-            bodyTokens = bodyTokens
-                .TakeWhile(t => t.Type != TokenType.RightBrace)
-                .SkipWhile(t => t.Type == TokenType.LeftBrace || t.Type == TokenType.Whitespace)
-                .ToList();
 
-            var body = Parse_2(bodyTokens);
+            var body = (BlockNode) Parse_2(bodyTokens)[0];
 
-            return new ForeachNode(token.Value, condition, body);
+            return new ForeachNode(token, headerTokens, body);
+
+            // return new ForeachNode(token.Value, condition, body);
+            throw new NotImplementedException();
         }
 
         static Node? If(Token token, Stack<Token> stack)
@@ -217,20 +236,51 @@ namespace Cli.Mvc.ViewCompiler
 
             stack.PopWhile(t => t.Value == " "); // skip spaces
 
-            var conditionTokens = stack.PopUntil(token => token.Value.EndsWith(")")).ToList();
-            var condition = string.Join("", conditionTokens.Select(t => t.Value));
+            var conditionTokens = stack
+                .PopUntil(token => token.Value.EndsWith(")"))
+                .Where(t => t.Type != TokenType.Whitespace)
+                .ToList();
 
             stack.PopWhile(t => t.Value == "\r\n"); // skip line breaks
 
+            //var bodyTokens = stack.PopUntil(t => t.Type == TokenType.RightBrace).ToList();
+            //bodyTokens = bodyTokens
+            //    .TakeWhile(t => t.Type != TokenType.RightBrace)
+            //    .SkipWhile(t => t.Type == TokenType.LeftBrace || t.Type == TokenType.Whitespace)
+            //    .ToList();
+
             var bodyTokens = stack.PopUntil(t => t.Type == TokenType.RightBrace).ToList();
-            bodyTokens = bodyTokens
-                .TakeWhile(t => t.Type != TokenType.RightBrace)
-                .SkipWhile(t => t.Type == TokenType.LeftBrace || t.Type == TokenType.Whitespace)
-                .ToList();
+
+            var body = (BlockNode) Parse_2(bodyTokens)[0];
+
+            return new IfNode(token, conditionTokens, body);
+
+            throw new NotImplementedException();
+        }
+
+        static Node? Block(Token token, Stack<Token> stack)
+        {
+            if (token.Type != TokenType.LeftBrace)
+            {
+                return null;
+            }
+
+            stack.PopUntil(IsLineBreak).ToList();
+
+            var tokens = stack.PopUntil(t => t.Type == TokenType.RightBrace).ToList();
+
+            var end = tokens[tokens.Count - 1];
+
+            var bodyTokens = tokens.GetRange(0, tokens.Count - 1);
 
             var body = Parse_2(bodyTokens);
 
-            return new IfNode(token.Value, condition, body);
+            return new BlockNode(token, end, body);
+        }
+
+        static bool IsLineBreak(Token token)
+        {
+            return token.Type == TokenType.Whitespace && (token.Value == "\r\n" ||  token.Value == "\n");
         }
     }
 }

@@ -18,15 +18,15 @@ namespace Cli.Mvc.ViewCompiler
         string Emit(AbstractSyntaxTree tree);
     }
 
-    public class ViewRenderingCodeEmitter 
+    public class ViewRenderingCodeEmitter
     {
         public string EmitClass(string @namespace, string fileName, string template)
         {
             var tree = new Parser().Parse(template);
 
             var modelDeclarationNode = tree.Nodes.OfType<ModelTypeDeclarationNode>().FirstOrDefault();
-            var modelType = modelDeclarationNode?.ModelType;
-            var modelNamespace = GetModelNamespace(modelType);
+            var modelType = modelDeclarationNode?.ModelType?.Value;
+            // var modelNamespace = GetModelNamespace(modelType);
 
             var renderingCode = EmitRenderingCode(tree);
 
@@ -38,11 +38,11 @@ namespace Cli.Mvc.ViewCompiler
             {
                 public class {{fileName}}View
                 {
-                    {{ If(modelType, $"public {modelType} Model {{ get; }}") }}
+                    {{If(modelType, $"public {modelType} Model {{ get; }}")}}
 
-                    public {{fileName}}View({{ If(modelType, $"{modelType} model") }})
+                    public {{fileName}}View({{If(modelType, $"{modelType} model")}})
                     {
-                        {{ If(modelType, $"Model = model;") }}
+                        {{If(modelType, $"Model = model;")}}
                     }
 
                     public string Render()
@@ -113,11 +113,11 @@ namespace Cli.Mvc.ViewCompiler
         {
             return node switch
             {
-                TextNode text         => EmitNode(text),
+                TextNode text => EmitNode(text),
                 VariableNode variable => EmitNode(variable),
-                ForeachNode @foreach  => EmitNode(@foreach),
-                IfNode @if            => EmitNode(@if),
-                _                     => throw new EmitterException($"Cannot emit node: {node.Value}")
+                ForeachNode @foreach => EmitNode(@foreach),
+                IfNode @if => EmitNode(@if),
+                _ => throw new EmitterException($"Cannot emit node: {node.Value}")
             };
         }
 
@@ -127,7 +127,7 @@ namespace Cli.Mvc.ViewCompiler
                 .Value
                 .Replace("\n", "\\n")
                 .Replace("\r", "\\r");
-            
+
             return $"""sb.Append("{formattedValue}");""";
         }
 
@@ -140,10 +140,8 @@ namespace Cli.Mvc.ViewCompiler
         {
             var code =
                 $$"""
-                foreach {{node.Condition}}
-                {{ Indent("{", 3) }}
-                {{ EmitNodes(node.Body) }}
-                {{ Indent("}", 3) }}
+                foreach {{string.Join(" ", node.Header.Select(token => token.Value).ToList())}}
+                {{EmitNode(node.Body)}}
                 """;
 
             return code;
@@ -153,7 +151,19 @@ namespace Cli.Mvc.ViewCompiler
         {
             var code =
                 $$"""
-                if {{node.Condition}}
+                if {{string.Join(" ", node.Header.Select(token => token.Value))}}
+                {{Indent("{", 3)}}
+                {{EmitNode(node.Body)}}
+                {{Indent("}", 3)}}
+                """;
+
+            return code;
+        }
+
+        string EmitNode(BlockNode node, int indentationLevel = 1)
+        {
+            var code =
+                $$"""
                 {{Indent("{", 3)}}
                 {{EmitNodes(node.Body)}}
                 {{Indent("}", 3)}}
@@ -186,7 +196,7 @@ namespace Cli.Mvc.ViewCompiler
 
                 sb.Append("                ");
                 sb.Append(EmitNode(node));
-                
+
                 if (i < nodes.Count - 1)
                 {
                     sb.Append("\r\n");

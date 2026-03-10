@@ -1,5 +1,5 @@
 ﻿using Cli.Mvc.Examples.Razor.Models;
-using Cli.Mvc.Examples.Razor.Views.Compiled;
+// using Cli.Mvc.Examples.Razor.Views.Compiled;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,15 +18,15 @@ namespace Cli.Mvc.Examples.Razor.Controllers
                 new("Lexi")
             };
 
-            var view = new WorldView(ninjas);
+            // var view = new WorldView(ninjas);
 
             // Console.WriteLine(view.Render());
 
             // Console.Write();
 
-            return Ok(view.Render());
+            // return Ok(view.Render());
 
-            // return Ok("Success!");
+            return Ok("Success!");
         }
     }
 }
