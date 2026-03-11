@@ -27,7 +27,7 @@ namespace Cli.Mvc.ViewCompiler
         {
             var tokens = new List<Token>();
 
-            var lines = Regex.Split(text, "(\n|\r\n)");
+            var lines = Regex.Split(text, "(\n|\r\n|{|})");
 
             var position = 0;
             var lineNumber = 0;

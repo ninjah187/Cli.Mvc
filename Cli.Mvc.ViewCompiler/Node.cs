@@ -80,18 +80,18 @@ namespace Cli.Mvc.ViewCompiler
         }
     }
 
-    public class BlockNode(Token start, Token end, IReadOnlyList<Node> body) : Node([start, end])
+    public class BlockNode(Token start, Token? end, IReadOnlyList<Node> body) : Node(end == null ? [start] : [start, end])
     {
         public Token Start { get; } = start;
-        public Token End { get; } = end;
+        public Token? End { get; } = end;
         public IReadOnlyList<Node> Body { get; } = body;
     }
 
-    public class IfNode(Token keyword, IReadOnlyList<Token> header, BlockNode body) : Node([keyword, ..header])
+    public class IfNode(Token keyword, IReadOnlyList<Token> header, BlockNode? body) : Node([keyword, ..header])
     {
         public Token Keyword { get; } = keyword;
         public IReadOnlyList<Token> Header { get; } = header;
-        public BlockNode Body { get; } = body;
+        public BlockNode? Body { get; } = body;
     }
 
     //public class ForeachNode(string value, string condition, IReadOnlyList<Node> body) : Node(value)

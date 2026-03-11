@@ -32,6 +32,11 @@ namespace Cli.Mvc.ViewCompiler
 
         public static IReadOnlyList<Node> Parse_2(IReadOnlyList<Token> tokens)
         {
+            if (tokens.Count == 0)
+            {
+                return [];
+            }
+
             var stack = new Stack<Token>(tokens.Reverse());
 
             var nodes = new List<Node>();
@@ -241,7 +246,9 @@ namespace Cli.Mvc.ViewCompiler
                 .Where(t => t.Type != TokenType.Whitespace)
                 .ToList();
 
-            stack.PopWhile(t => t.Value == "\r\n"); // skip line breaks
+            // stack.PopWhile(t => t.Value == "\r\n"); // skip line breaks
+
+            stack.PopWhile(t => t.Type == TokenType.Whitespace);
 
             //var bodyTokens = stack.PopUntil(t => t.Type == TokenType.RightBrace).ToList();
             //bodyTokens = bodyTokens
@@ -251,11 +258,9 @@ namespace Cli.Mvc.ViewCompiler
 
             var bodyTokens = stack.PopUntil(t => t.Type == TokenType.RightBrace).ToList();
 
-            var body = (BlockNode) Parse_2(bodyTokens)[0];
+            var body = bodyTokens.Count == 0 ? null : (BlockNode) Parse_2(bodyTokens)[0];
 
             return new IfNode(token, conditionTokens, body);
-
-            throw new NotImplementedException();
         }
 
         static Node? Block(Token token, Stack<Token> stack)
@@ -265,13 +270,13 @@ namespace Cli.Mvc.ViewCompiler
                 return null;
             }
 
-            stack.PopUntil(IsLineBreak).ToList();
+            stack.PopWhile(IsLineBreak);
 
             var tokens = stack.PopUntil(t => t.Type == TokenType.RightBrace).ToList();
 
-            var end = tokens[tokens.Count - 1];
+            var end = tokens.Count == 0 ? null : tokens[tokens.Count - 1];
 
-            var bodyTokens = tokens.GetRange(0, tokens.Count - 1);
+            var bodyTokens = tokens.Count == 0 ? [] : tokens.GetRange(0, tokens.Count - 1);
 
             var body = Parse_2(bodyTokens);
 
